@@ -17,10 +17,10 @@ namespace MinecraftWorldConverter
             }
             
             string inputFile = args[0];
-            WorldFile worldFile = new WorldFile();
+            ClassicWorld classicWorld = new ClassicWorld();
             try
             {
-                worldFile.LoadFromFile(inputFile);
+                classicWorld.LoadFromFile(inputFile);
             } catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);

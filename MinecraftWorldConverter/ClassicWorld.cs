@@ -4,10 +4,8 @@ using System.IO.Compression;
 
 namespace MinecraftWorldConverter
 {
-    public class WorldFile
+    public class ClassicWorld
     {
-        public WorldVersion InputVersion { get; private set; } = WorldVersion.Invalid;
-        
         private const uint MAGIC = 0x271bb788;
         
         private uint _magic;
@@ -23,8 +21,6 @@ namespace MinecraftWorldConverter
         public bool NetworkMode { get; set; }
         public float RotSpawn { get; set; }
         public int SkyColor { get; set; }
-        public int TickCount { get; set; }
-        public int UnprocessedTicks { get; set; }
         public int WaterLevel { get; set; }
         public int Width { get; set; }
         public int SpawnX { get; set; }
@@ -40,7 +36,7 @@ namespace MinecraftWorldConverter
         
         public byte[] BlockMapData { get; set; }
         
-        public WorldFile()
+        public ClassicWorld()
         {
             
         }
@@ -65,7 +61,7 @@ namespace MinecraftWorldConverter
             _magic = br.ReadUInt32();
             if (_magic != MAGIC)
                 throw new MCWorldException("Invalid Classic World");
-            InputVersion = WorldVersion.Classic;
+            
             _version = br.ReadByte();
             
             // Start of Level Class section
@@ -80,8 +76,8 @@ namespace MinecraftWorldConverter
             NetworkMode = br.ReadBoolean();
             RotSpawn = br.ReadSingle();
             SkyColor = br.ReadInt32();
-            TickCount = br.ReadInt32();
-            UnprocessedTicks = br.ReadInt32();
+            br.ReadInt32(); // tick count, why was this stored???
+            br.ReadInt32(); // unprocessed ticks, why was this stored???
             WaterLevel = br.ReadInt32();
             Width = br.ReadInt32();
             SpawnX = br.ReadInt32();

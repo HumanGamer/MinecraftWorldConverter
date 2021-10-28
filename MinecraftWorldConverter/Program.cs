@@ -28,7 +28,12 @@ namespace MinecraftWorldConverter
                 Environment.Exit(1);
                 return;
             }
-            
+
+            foreach (var property in classicWorld.GetPropertyMap())
+            {
+                Console.WriteLine(property.Key + " = " + property.Value + ";");
+            }
+
             Console.WriteLine("Done!");
             
             

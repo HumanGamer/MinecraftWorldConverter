@@ -18,6 +18,16 @@ namespace MinecraftWorldConverter
         {
         }
 
+        public byte PeekByte()
+        {
+            var pos = BaseStream.Position;
+            
+            var ret = ReadByte();
+            
+            BaseStream.Position = pos;
+            return ret;
+        }
+
         public override int ReadInt32()
         {
             var data = base.ReadBytes(4);

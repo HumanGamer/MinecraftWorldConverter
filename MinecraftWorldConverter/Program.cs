@@ -21,7 +21,7 @@ namespace MinecraftWorldConverter
             try
             {
                 classicWorld.LoadFromFile(inputFile);
-            } catch (Exception ex)
+            } catch (MCWorldException ex)
             {
                 Console.WriteLine(ex.Message);
                 Console.WriteLine("Failed to read input file: " + Path.GetFileName(inputFile));
@@ -29,10 +29,10 @@ namespace MinecraftWorldConverter
                 return;
             }
 
-            foreach (var property in classicWorld.GetPropertyMap())
-            {
-                Console.WriteLine(property.Key + " = " + property.Value + ";");
-            }
+            // foreach (var property in classicWorld.GetPropertyMap())
+            // {
+            //     Console.WriteLine(property.Key + " = " + property.Value + ";");
+            // }
 
             Console.WriteLine("Done!");
             

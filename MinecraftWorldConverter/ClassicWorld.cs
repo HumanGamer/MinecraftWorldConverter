@@ -63,7 +63,35 @@ namespace MinecraftWorldConverter
                 throw new MCWorldException("Invalid Classic World");
             
             _version = br.ReadByte();
-            
+
+            JavaObject javaObject = new JavaObject();
+            javaObject.LoadFromStream(ms);
+
+            var obj = javaObject.Object;
+            foreach (var field in obj.Fields)
+            {
+                Console.WriteLine("Name: " + field.Name + "(" + field.Type + ", " + field.TypeString + ") = " + field.Data.Bytes);
+            }
+
+            /*var cls = javaObject.ClassDescriptor;
+            Console.WriteLine("{");
+            Console.WriteLine("    Name: " + cls.Name);
+            Console.WriteLine("    SerialVersionUID: " + cls.SerialVersionUID);
+            Console.WriteLine("    Flags: " + cls.Flags);
+            Console.WriteLine("    Fields[" + cls.Fields.Count + "]:");
+            foreach (var field in cls.Fields)
+            {
+                Console.WriteLine("        Name: " + field.Name + ", Type: " + field.Type + ", TypeName: " +
+                                  field.TypeString);
+            }
+            Console.WriteLine("}");*/
+
+            // foreach (var v in javaObject.ClassDescriptor.GetPropertyMap())
+            // {
+            //     Console.WriteLine("S: " + v);
+            // }
+
+            /*
             // Start of Level Class section
             br.BaseStream.Position = 0x18E;
             CloudColor = br.ReadInt32();
@@ -98,7 +126,7 @@ namespace MinecraftWorldConverter
             Creator = br.ReadJavaString();
             
             br.BaseStream.Position++;
-            Name = br.ReadJavaString();
+            Name = br.ReadJavaString();*/
         }
     }
 }

@@ -276,7 +276,7 @@ namespace MinecraftWorldConverter
                     FieldData data = new FieldData();
                     data.Name = field.Name;
                     if (data.Name == "tmp")
-                        Console.WriteLine("HERE"); // TODO: Read pos 3308, it fails because array length is there, and it doesn't know it's an array because it's using the field type and not the actual type
+                        Console.WriteLine("HERE"); // TODO: Read pos 3038, it fails because array length is there, and it doesn't know it's an array because it's using the field type and not the actual type
                     data.Data = new ObjectData();
                     
                     ReadValue(br, baseDesc, field, data);
@@ -346,6 +346,8 @@ namespace MinecraftWorldConverter
                         }
                     }
                     ClassDesc newDesc = ReadClassDescriptors(br, null);
+                    if (newDesc != null && newDesc.Name == "[Ljava.util.ArrayList;")
+                        Console.WriteLine("HERE3"); // TODO: This breaks somehow
                     if (newDesc != null)
                         data.Data = ReadClassValues(br, newDesc);
                 } break;

@@ -29,6 +29,15 @@ namespace MinecraftWorldConverter
         public int SpawnY { get; set; }
         public int SpawnZ { get; set; }
         
+        public float PlayerX { get; set; }
+        public float PlayerY { get; set; }
+        public float PlayerZ { get; set; }
+        public float PlayerYaw { get; set; }
+        public float PlayerPitch { get; set; }
+        public float PlayerMotionX { get; set; }
+        public float PlayerMotionY { get; set; }
+        public float PlayerMotionZ { get; set; }
+        
         public string Creator { get; set; }
         public string Name { get; set; }
         
@@ -91,6 +100,30 @@ namespace MinecraftWorldConverter
             BlockMapDepth = br.ReadInt32();
             BlockMapHeight = br.ReadInt32();
             BlockMapWidth = br.ReadInt32();
+            
+            // Player Stuff
+            br.BaseStream.Position = 0x738;
+            bool slide = br.ReadBoolean();
+            int textureId = br.ReadInt32();
+            float walkDist = br.ReadSingle();
+            float walkDistO = br.ReadSingle();
+            PlayerX = br.ReadSingle();
+            float xOld = br.ReadSingle();
+            PlayerPitch = br.ReadSingle();
+            float xRotO = br.ReadSingle();
+            PlayerMotionX = br.ReadSingle();
+            float xo = br.ReadSingle();
+            PlayerY = br.ReadSingle();
+            float yOld = br.ReadSingle();
+            PlayerYaw = br.ReadSingle();
+            float yRotO = br.ReadSingle();
+            float ySlideOffset = br.ReadSingle();
+            PlayerMotionY = br.ReadSingle();
+            float yo = br.ReadSingle();
+            PlayerZ = br.ReadSingle();
+            float zOld = br.ReadSingle();
+            PlayerMotionZ = br.ReadSingle();
+            float zo = br.ReadSingle();
 
             // Start of block array
             br.BaseStream.Position = 0x5096;
@@ -147,17 +180,35 @@ namespace MinecraftWorldConverter
                 }
                 lvl.Add(map);
                 
-                /*var entities = new NbtList("Entities");
+                var entities = new NbtList("Entities", NbtTagType.Compound);
                 {
-                    // TODO: Deal with entities
+                    // TODO: Deal with entities other than the player (and all their properties)
+                    
+                    NbtCompound player = new NbtCompound();
+                    
+                    player.Add(new NbtString("id", "LocalPlayer"));
+                    player.AddList("Pos", new []{ PlayerX, PlayerY, PlayerZ });
+                    player.AddList("Rotation", new []{ PlayerYaw, PlayerPitch });
+                    player.AddList("Motion", new []{ PlayerMotionX, PlayerMotionY, PlayerMotionZ });
+                    player.Add(new NbtFloat("FallDistance", 0));
+                    player.Add(new NbtShort("Health", 20));
+                    player.Add(new NbtShort("AttackTime", 0));
+                    player.Add(new NbtShort("HurtTime", 0));
+                    player.Add(new NbtShort("DeathTime", 0));
+                    player.Add(new NbtShort("Air", 300));
+                    player.Add(new NbtShort("Fire", 0));
+                    player.Add(new NbtInt("Score", 0));
+                    player.Add(new NbtList("Inventory", NbtTagType.Compound));
+                    
+                    entities.Add(player);
                 }
                 lvl.Add(entities);
                 
-                var tileEntities = new NbtList("TileEntities");
+                var tileEntities = new NbtList("TileEntities", NbtTagType.Compound);
                 {
                     // No Tile Entities in Classic Worlds
                 }
-                lvl.Add(tileEntities);*/
+                lvl.Add(tileEntities);
             }
             file.RootTag = lvl;
 

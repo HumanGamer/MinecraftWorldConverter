@@ -31,6 +31,8 @@ namespace MinecraftWorldConverter
                     short val => new NbtShort(val),
                     int val => new NbtInt(val),
                     long val => new NbtLong(val),
+                    float val => new NbtFloat(val),
+                    double val => new NbtDouble(val),
                     _ => throw new MCWorldException("AddList: Unsupported type: " + typeof(T))
                 });
             }

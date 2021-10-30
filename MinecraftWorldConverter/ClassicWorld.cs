@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
+using fNbt;
 
 namespace MinecraftWorldConverter
 {
@@ -99,6 +101,67 @@ namespace MinecraftWorldConverter
             
             br.BaseStream.Position++;
             Name = br.ReadJavaString();
+        }
+
+        public void SaveIndevWorld(string fileName)
+        {
+            NbtFile file = new NbtFile();
+
+            var lvl = new NbtCompound("MinecraftLevel");
+            {
+                var about = new NbtCompound("About");
+                {
+                    about.Add(new NbtLong("CreatedOn", CreateTime));
+                    about.Add(new NbtString("Name", Name));
+                    about.Add(new NbtString("Author", Creator));
+                }
+                lvl.Add(about);
+                
+                var environment = new NbtCompound("Environment");
+                {
+                    //environment.Add(new NbtShort("TimeOfDay", 0));
+                    environment.Add(new NbtByte("SkyBrightness", 100));
+                    environment.Add(new NbtInt("SkyColor", SkyColor));
+                    environment.Add(new NbtInt("FogColor", FogColor));
+                    environment.Add(new NbtInt("CloudColor", CloudColor));
+                    environment.Add(new NbtShort("CloudHeight", 66));
+                    environment.Add(new NbtByte("SurroundingGroundType", 2));
+                    environment.Add(new NbtShort("SurroundingGroundHeight", 23));
+                    environment.Add(new NbtByte("SurroundingWaterType", 8));
+                    environment.Add(new NbtShort("SurroundingWaterHeight", 32));
+                }
+                lvl.Add(environment);
+                
+                var map = new NbtCompound("Map");
+                {
+                    map.AddList("Spawn", new []{(short)SpawnX, (short)SpawnY, (short)SpawnZ});
+                    map.Add(new NbtShort("Height", (short)Depth));
+                    map.Add(new NbtShort("Length", (short)Height));
+                    map.Add(new NbtShort("Width", (short)Width));
+                    map.Add(new NbtByteArray("Blocks", BlockMapData));
+
+                    int length = Width * Height * Depth;
+                    byte[] data = new byte[length];
+                    Array.Fill<byte>(data, 15);
+                    map.Add(new NbtByteArray("Data", data));
+                }
+                lvl.Add(map);
+                
+                /*var entities = new NbtList("Entities");
+                {
+                    // TODO: Deal with entities
+                }
+                lvl.Add(entities);
+                
+                var tileEntities = new NbtList("TileEntities");
+                {
+                    // No Tile Entities in Classic Worlds
+                }
+                lvl.Add(tileEntities);*/
+            }
+            file.RootTag = lvl;
+
+            file.SaveToFile(fileName, NbtCompression.GZip);
         }
     }
 }

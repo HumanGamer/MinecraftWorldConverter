@@ -17,6 +17,13 @@ namespace MinecraftWorldConverter
             }
             
             string inputFile = args[0];
+
+            string outputFile;
+            if (args.Length > 1)
+                outputFile = args[1];
+            else
+                outputFile = Path.ChangeExtension(inputFile, "mclevel");
+            
             ClassicWorld classicWorld = new ClassicWorld();
             try
             {
@@ -33,6 +40,9 @@ namespace MinecraftWorldConverter
             {
                 Console.WriteLine(property.Key + " = " + property.Value + ";");
             }
+            
+            Console.WriteLine("Saving Indev World(" + Path.GetFileName(outputFile) + ")...");
+            classicWorld.SaveIndevWorld(outputFile);
 
             Console.WriteLine("Done!");
             

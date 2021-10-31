@@ -22,27 +22,30 @@ namespace MinecraftWorldConverter
             if (args.Length > 1)
                 outputFile = args[1];
             else
-                outputFile = Path.ChangeExtension(inputFile, "mclevel");
+                outputFile = Path.ChangeExtension(inputFile, null);//, "mclevel");
             
             ClassicWorld classicWorld = new ClassicWorld();
-            try
-            {
+            //try
+            //{
                 classicWorld.LoadFromFile(inputFile);
-            } catch (Exception ex)
+            /*} catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 Console.WriteLine("Failed to read input file: " + Path.GetFileName(inputFile));
                 Environment.Exit(1);
                 return;
-            }
+            }*/
 
             foreach (var property in classicWorld.GetPropertyMap())
             {
                 Console.WriteLine(property.Key + " = " + property.Value + ";");
             }
             
-            Console.WriteLine("Saving Indev World(" + Path.GetFileName(outputFile) + ")...");
-            classicWorld.SaveIndevWorld(outputFile);
+            //Console.WriteLine("Saving Indev World(" + Path.GetFileName(outputFile) + ")...");
+            //classicWorld.SaveIndevWorld(outputFile);
+            
+            Console.WriteLine("Saving Alpha World(" + Path.GetFileName(outputFile) + ")...");
+            classicWorld.SaveAlphaWorld(outputFile);
 
             Console.WriteLine("Done!");
             

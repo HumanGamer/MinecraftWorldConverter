@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using fNbt;
 
@@ -38,6 +39,13 @@ namespace MinecraftWorldConverter
             }
                     
             self.Add(list);
+        }
+
+        public static byte[] Split(this byte[] self, int start, int end)
+        {
+            byte[] copy = new byte[end - start];
+            Array.Copy(self, start, copy, 0, copy.Length);
+            return copy;
         }
     }
 }

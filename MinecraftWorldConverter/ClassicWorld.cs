@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -333,6 +334,152 @@ namespace MinecraftWorldConverter
                         "c." + base36SignedList[i] + "." + base36SignedList[j] + ".dat"), NbtCompression.GZip);
 
                 }
+            }
+        }
+
+        public void SaveMcRegionWorld(string fileName)
+        {
+            if (!Directory.Exists(fileName))
+                Directory.CreateDirectory(fileName);
+            
+            NbtFile levelDat = new NbtFile();
+
+            var offset = -128;
+            var yOffset = 32;
+
+            var data = new NbtCompound("Data");
+            {
+                data.Add(new NbtLong("LastPlayed", CreateTime));
+                data.Add(new NbtLong("SizeOnDisk", 0)); // TODO: Size on disk
+                data.Add(new NbtLong("RandomSeed", new Random().Next()));
+                data.Add(new NbtInt("SpawnX", SpawnX + offset));
+                data.Add(new NbtInt("SpawnY", SpawnY + yOffset));
+                data.Add(new NbtInt("SpawnZ", SpawnZ + offset));
+                data.Add(new NbtLong("Time", 0));
+
+                var player = new NbtCompound("Player");
+                {
+                    player.Add(new NbtInt("Dimension", 0));
+                    player.AddList("Pos", new double[]{ PlayerX + offset + 0.5f, PlayerY + yOffset + 0.5f, PlayerZ + offset + 0.5f });
+                    player.AddList("Rotation", new []{ PlayerYaw, PlayerPitch });
+                    player.AddList("Motion", new double[]{ PlayerMotionX, PlayerMotionY, PlayerMotionZ });
+                    player.Add(new NbtByte("OnGround", 1));
+                    player.Add(new NbtFloat("FallDistance", 0));
+                    player.Add(new NbtShort("Health", 20));
+                    player.Add(new NbtShort("AttackTime", 0));
+                    player.Add(new NbtShort("HurtTime", 0));
+                    player.Add(new NbtShort("DeathTime", 0));
+                    player.Add(new NbtShort("Air", 300));
+                    player.Add(new NbtShort("Fire", 0));
+                    player.Add(new NbtInt("Score", 0));
+                    player.Add(new NbtList("Inventory", NbtTagType.Compound));
+                }
+                data.Add(player);
+            }
+            levelDat.RootTag.Add(data);
+
+            levelDat.SaveToFile(Path.Combine(fileName, "level.dat"), NbtCompression.GZip);
+
+            var blocks = new byte[32768 * 256];
+            int ii = 0;
+            for (int a = 0; a < 16; a++)
+            {
+                for (int b = 0; b < 16; b++)
+                {
+                    for (int z = a * 16; z < a * 16 + 16; z++)
+                    {
+                        for (int x = b * 16; x < b * 16 + 16; x++)
+                        {
+                            for (int j = 0; j < 32; j++)
+                            {
+                                blocks[ii + j] = 1; // 0 for floating world types if we ever support them
+                            }
+
+                            ii += 32;
+
+                            for (int y = 0; y < 64; y++)
+                            {
+                                blocks[ii] = BlockMapData[(y * 256 + x) * 256 + z];
+                                ii++;
+                            }
+
+                            for (int j = 0; j < 32; j++)
+                            {
+                                blocks[ii + j] = 0;
+                            }
+
+                            ii += 32;
+                        }
+                    }
+                }
+            }
+            
+            int[] base36SignedList = new int[] { -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7 };
+            
+            Dictionary<Tuple<int, int>, List<NbtCompound>> chunks = new Dictionary<Tuple<int, int>, List<NbtCompound>>();
+            
+            for (int i = 0; i < 16; i++)
+            {
+                for (int j = 0; j < 16; j++)
+                {
+                    int n = 16 * i + j;
+
+                    //var chunkCompound = new NbtCompound();
+                    
+                    // TODO: Deal with this later
+                    var blockData = new byte[16384];
+                    var blockLight = new byte[16384];
+                    var skyLight = new byte[16384];
+                    var heightMap = new byte[256];
+
+                    var level = new NbtCompound("Level");
+                    {
+                        level.Add(new NbtInt("xPos", base36SignedList[i]));
+                        level.Add(new NbtInt("zPos", base36SignedList[j]));
+                        level.Add(new NbtByte("TerrainPopulated", 1));
+                        level.Add(new NbtLong("LastUpdate", 200));
+                        level.Add(new NbtByteArray("Blocks", blocks.Split(n * 32768, n * 32768 + 32768)));
+                        level.Add(new NbtByteArray("Data", blockData));
+                        level.Add(new NbtByteArray("BlockLight", blockLight));
+                        level.Add(new NbtByteArray("SkyLight", skyLight));
+                        level.Add(new NbtByteArray("HeightMap", heightMap));
+                        level.Add(new NbtList("Entities", NbtTagType.Compound)); // TODO: Deal with this later
+                        level.Add(new NbtList("TileEntities", NbtTagType.Compound)); // TODO: Deal with this later
+                    }
+                    //chunkCompound.Add(level);
+
+                    if (!chunks.ContainsKey(new Tuple<int, int>(i >> 5, j >> 5)))
+                        chunks[new Tuple<int, int>(i >> 5, j >> 5)] = new List<NbtCompound>();
+                    chunks[new Tuple<int, int>(i >> 5, j >> 5)].Add(level);
+                }
+            }
+
+            string path = Path.Combine(fileName, "region");
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+            
+            foreach (var pair in chunks)
+            {
+                int regionX = pair.Key.Item1;
+                int regionZ = pair.Key.Item1;
+
+                Dictionary<Tuple<int, int>, byte[]> chunkFiles = new Dictionary<Tuple<int, int>, byte[]>();
+
+                foreach (var chunk in pair.Value)
+                {
+                    int chunkX = chunk.Get("xPos").IntValue;
+                    int chunkZ = chunk.Get("zPos").IntValue;
+
+                    NbtFile chunkFile = new NbtFile();
+                    chunkFile.RootTag.Add(chunk);
+                    byte[] bytes = chunkFile.SaveToBuffer(NbtCompression.ZLib);
+                    chunkFiles[new Tuple<int, int>(chunkX, chunkZ)] = bytes;
+                    
+                    //Console.WriteLine("Found Chunk: " + chunkX + ", " + chunkZ);
+                }
+
+                string regionFile = Path.Combine(path, $"r.{regionX}.{regionZ}.mcr");
+                
             }
         }
     }

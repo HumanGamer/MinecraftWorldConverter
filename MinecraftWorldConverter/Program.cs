@@ -44,8 +44,11 @@ namespace MinecraftWorldConverter
             //Console.WriteLine("Saving Indev World(" + Path.GetFileName(outputFile) + ")...");
             //classicWorld.SaveIndevWorld(outputFile);
             
-            Console.WriteLine("Saving Alpha World(" + Path.GetFileName(outputFile) + ")...");
-            classicWorld.SaveAlphaWorld(outputFile);
+            //Console.WriteLine("Saving Alpha World(" + Path.GetFileName(outputFile) + ")...");
+            //classicWorld.SaveAlphaWorld(outputFile);
+            
+            Console.WriteLine("Saving McRegion World(" + Path.GetFileName(outputFile) + ")...");
+            classicWorld.SaveMcRegionWorld(outputFile);
 
             Console.WriteLine("Done!");
             
